@@ -9,28 +9,49 @@ const game = new Phaser.Game(650, 350, Phaser.AUTO, '', { preload: preload, crea
 
 let human
 let currentAnimation
+let coins
+let coinCount = 0
 
 function preload() {
   game.load.image('background', './assets/background/grass_680x382.jpg')
   game.load.atlas('human', './assets/human/human.png', './assets/human/human.json')
+  game.load.spritesheet('coin', './assets/misc/coin.png', 32, 32)
 }
 
 function create() {
   game.world.setBounds(0, 0, 650, 350)
   game.add.sprite(0, 0, 'background')
 
-  //game.physics.startSystem(Phaser.Physics.ARCADE)
+  game.physics.startSystem(Phaser.Physics.ARCADE)
 
   human = game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'human')
   human.animations.add('walk_right', Phaser.Animation.generateFrameNames('frame', 87, 95), 9, true)
   human.animations.add('walk_left', Phaser.Animation.generateFrameNames('frame', 69, 77), 9, true)
   human.animations.add('walk_up', Phaser.Animation.generateFrameNames('frame', 60, 68), 9, true)
   human.animations.add('walk_down', Phaser.Animation.generateFrameNames('frame', 78, 86), 9, true)
-  //human.animations.play('walk_left', 10, true);
+  game.physics.arcade.enable(human)
+  human.count = 0
+  coins = game.add.group()
+  coins.enableBody = true
+
+  //  Add animations to all of the coin sprites
+  coins.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5], 10, true);
+  //coins.callAll('animations.play', 'animations', 'spin');
+  for(let i = 0; i < 5; i++) {
+    // Create each coin and add it to the group.
+    const coin = game.add.sprite(0, 0, 'coin')
+    coins.add(coin)
+    coin.anchor.setTo(0.5, 0.5)
+    game.physics.enable(coin, Phaser.Physics.ARCADE)
+    coin.animations.add('spin', [0, 1, 2, 3, 4, 5], 10, true)
+    coin.kill();
+  }
 }
 
 function update() {
   game.world.wrap(human, 0, true)
+  game.physics.arcade.overlap(human, coins, collectCoin, null, this)
+  generateCoins()
 
   if (game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
     human.x -= 4;
@@ -70,10 +91,35 @@ function update() {
 }
 
 function render() {
-  game.debug.spriteInfo(human, 20, 32);
+  //game.debug.spriteInfo(human, 20, 32)
+  game.debug.text('Coins: '+ human.count, 32, 32);
 }
 
-//function collectCoin(player, coin) {
-//  coin.kill();
-//}
+// Should keep generating coins randomly to maintain a certain number of coins
+function generateCoins() {
+  if (coinCount < 5) {
+    const coin = coins.getFirstDead()
+    if (coin === null || typeof coin === 'undefined') return
+    coin.revive()
+    coin.reset(getRandomInt(635), getRandomInt(335))
+    ++coinCount
+    coin.animations.play('spin', 10, true)
+  }
+}
 
+function getRandomInt(max) {
+  const num = Math.floor(Math.random() * (max - 15 + 1)) + 15
+  return num
+}
+
+function collectCoin(player, coin) {
+  coin.kill()
+  if (player.count) {
+    player.count += 1
+  } else {
+    player.count = 1
+  }
+  setTimeout(() => {
+    --coinCount
+  }, 7000)
+}
