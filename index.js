@@ -21,7 +21,6 @@ function preload() {
 function create() {
   game.world.setBounds(0, 0, 650, 350)
   game.add.sprite(0, 0, 'background')
-
   game.physics.startSystem(Phaser.Physics.ARCADE)
 
   human = game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'human')
@@ -31,9 +30,18 @@ function create() {
   human.animations.add('walk_down', Phaser.Animation.generateFrameNames('frame', 78, 86), 9, true)
   game.physics.arcade.enable(human)
   human.count = 0
+
+  human.health = 50
+  human.maxHealth = 100
+
+  const playerHealthMeter = game.add.plugin(Phaser.Plugin.HealthMeter)
+  playerHealthMeter.bar(
+    human,
+    {x: 20, y: 100, width: 100, height: 20}
+  )
+
   coins = game.add.group()
   coins.enableBody = true
-
   //  Add animations to all of the coin sprites
   coins.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5], 10, true);
   //coins.callAll('animations.play', 'animations', 'spin');
@@ -101,14 +109,14 @@ function generateCoins() {
     const coin = coins.getFirstDead()
     if (coin === null || typeof coin === 'undefined') return
     coin.revive()
-    coin.reset(getRandomInt(635), getRandomInt(335))
+    coin.reset(getRandomInt(630), getRandomInt(330))
     ++coinCount
     coin.animations.play('spin', 10, true)
   }
 }
 
 function getRandomInt(max) {
-  const num = Math.floor(Math.random() * (max - 15 + 1)) + 15
+  const num = Math.floor(Math.random() * (max - 20 + 1)) + 20
   return num
 }
 
@@ -121,5 +129,5 @@ function collectCoin(player, coin) {
   }
   setTimeout(() => {
     --coinCount
-  }, 7000)
+  }, 5000)
 }
