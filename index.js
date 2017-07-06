@@ -37,7 +37,7 @@ function create() {
   const playerHealthMeter = game.add.plugin(Phaser.Plugin.HealthMeter)
   playerHealthMeter.bar(
     human,
-    {x: 20, y: 100, width: 100, height: 20}
+    {x: 20, y: 20, width: 100, height: 10}
   )
 
   coins = game.add.group()
@@ -100,7 +100,7 @@ function update() {
 
 function render() {
   //game.debug.spriteInfo(human, 20, 32)
-  game.debug.text('Coins: '+ human.count, 32, 32);
+  game.debug.text('Coins: '+ human.count, 20, 52);
 }
 
 // Should keep generating coins randomly to maintain a certain number of coins
